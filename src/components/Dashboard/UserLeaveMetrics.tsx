@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { UserMinus, Clock } from 'lucide-react';
+import { UserMinus, Clock, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MetricsCard } from './MetricsCard';
 import { formatNumber, formatPercent } from '@/utils/formatters';
