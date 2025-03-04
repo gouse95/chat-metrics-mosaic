@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Search, Calendar, Bell, Settings } from 'lucide-react';
+import { Search, Calendar, Bell, Settings, UserMinus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,9 +21,18 @@ import { format } from 'date-fns';
 interface DashboardHeaderProps {
   title: string;
   subtitle?: string;
+  onUserSelect?: (userId: string) => void;
+  onModelSelect?: (modelId: string) => void;
+  userOptions?: { id: string, name: string }[];
 }
 
-export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
+export function DashboardHeader({ 
+  title, 
+  subtitle,
+  onUserSelect,
+  onModelSelect,
+  userOptions = [] 
+}: DashboardHeaderProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
 
   return (
@@ -60,9 +69,12 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
             </PopoverContent>
           </Popover>
           
-          <Select defaultValue="all">
+          <Select 
+            defaultValue="all" 
+            onValueChange={(value) => onModelSelect && onModelSelect(value)}
+          >
             <SelectTrigger className="w-[150px] border-muted">
-              <SelectValue placeholder="Filter by" />
+              <SelectValue placeholder="Filter by model" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Models</SelectItem>
@@ -70,6 +82,23 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
               <SelectItem value="gpt-3.5">GPT-3.5</SelectItem>
               <SelectItem value="lamma">Llama</SelectItem>
               <SelectItem value="mixtral">Mixtral</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select 
+            defaultValue="all" 
+            onValueChange={(value) => onUserSelect && onUserSelect(value)}
+          >
+            <SelectTrigger className="w-[180px] border-muted">
+              <SelectValue placeholder="Filter by user" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Users</SelectItem>
+              {userOptions.map(user => (
+                <SelectItem key={user.id} value={user.id}>
+                  {user.name || user.id.slice(0, 8)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           

@@ -1,4 +1,3 @@
-
 // API service for handling metrics data
 
 // Types for our API responses
@@ -113,6 +112,13 @@ export interface ChatAnalysisTotals {
   total_prompt: number;
   total_successful_requests: number;
   total_tokens: number;
+}
+
+export interface UserLeaveMetricsResult {
+  total_leaves: number;
+  average_leave_duration: number;
+  leave_percentage: number;
+  leave_reasons: Record<string, number>;
 }
 
 // Mock API functions to simulate API calls
@@ -338,4 +344,29 @@ export const fetchChatAnalysisTotals = async (
     total_successful_requests: 2,
     total_tokens: 2266
   };
+};
+
+export const fetchUserLeaveMetrics = async (userId?: string): Promise<UserLeaveMetricsResult> => {
+  // In a real app, this would use the userId parameter to filter data
+  return {
+    total_leaves: userId === "all" ? 28 : 3,
+    average_leave_duration: userId === "all" ? 12.5 : 8.2,
+    leave_percentage: userId === "all" ? 0.18 : 0.12,
+    leave_reasons: {
+      "Inactive account": 12,
+      "User requested deletion": 8,
+      "Policy violation": 5,
+      "Switched to competitor": 3
+    }
+  };
+};
+
+export const fetchUsers = async (): Promise<{ id: string, name: string }[]> => {
+  return [
+    { id: "5c4b3a2d-1e0f-98b7-6a5c-4d3e2f1e0d9c", name: "User 1" },
+    { id: "9e8d7c6b-5a4f-32e1-bc0a-8d7e6f5c4b3a", name: "User 2" },
+    { id: "3f1a3b92-8c2b-4a44-bc93-6e6f0f786b98", name: "User 3" },
+    { id: "b7e1a2d3-6c4e-45f2-9b88-1c2d3a4e5f67", name: "User 4" },
+    { id: "f3c5b8a4-17a2-4f8e-91b6-2d0a9cfeb6f9", name: "User 5" }
+  ];
 };

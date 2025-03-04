@@ -8,6 +8,7 @@ import { ConversationAnalysis } from '@/components/Dashboard/ConversationAnalysi
 import { TokenUsage } from '@/components/Dashboard/TokenUsage';
 import { ModelDistribution } from '@/components/Dashboard/ModelDistribution';
 import { DailyActivity } from '@/components/Dashboard/DailyActivity';
+import { UserLeaveMetrics } from '@/components/Dashboard/UserLeaveMetrics';
 import { LoadingState } from '@/components/Dashboard/LoadingState';
 import { formatNumber, formatCompactNumber } from '@/utils/formatters';
 import { 
@@ -26,20 +27,27 @@ import {
   fetchAdvancedMetrics,
   fetchChatAnalysis,
   fetchConversationDetails,
+  fetchUserLeaveMetrics,
+  fetchUsers,
   type PlatformMetricsResult,
   type AdditionalMetricsResult,
   type AdvancedMetricsResult,
   type ChatAnalysisResult,
   type ConversationDetailsResult,
+  type UserLeaveMetricsResult,
 } from '@/services/api';
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState("all");
+  const [selectedModel, setSelectedModel] = useState("all");
   const [platformMetrics, setPlatformMetrics] = useState<PlatformMetricsResult | null>(null);
   const [additionalMetrics, setAdditionalMetrics] = useState<AdditionalMetricsResult | null>(null);
   const [advancedMetrics, setAdvancedMetrics] = useState<AdvancedMetricsResult | null>(null);
   const [chatAnalysis, setChatAnalysis] = useState<ChatAnalysisResult | null>(null);
   const [conversationDetails, setConversationDetails] = useState<ConversationDetailsResult | null>(null);
+  const [userLeaveMetrics, setUserLeaveMetrics] = useState<UserLeaveMetricsResult | null>(null);
+  const [userOptions, setUserOptions] = useState<{id: string, name: string}[]>([]);
 
   // Transform app usage distribution for chart display
   const appUsageData = additionalMetrics ? Object.entries(additionalMetrics.app_usage_distribution).map(([key, value]) => ({
@@ -53,35 +61,49 @@ const Index = () => {
     usage: value
   })) : [];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        // Fetch all data in parallel
-        const [platform, additional, advanced, analysis, conversations] = await Promise.all([
-          fetchPlatformMetrics(),
-          fetchAdditionalMetrics(),
-          fetchAdvancedMetrics(),
-          fetchChatAnalysis(),
-          fetchConversationDetails()
-        ]);
-        
-        setPlatformMetrics(platform);
-        setAdditionalMetrics(additional);
-        setAdvancedMetrics(advanced);
-        setChatAnalysis(analysis);
-        setConversationDetails(conversations);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const handleUserSelect = (userId: string) => {
+    setSelectedUser(userId);
+    fetchData(userId, selectedModel);
+  };
 
+  const handleModelSelect = (modelId: string) => {
+    setSelectedModel(modelId);
+    fetchData(selectedUser, modelId);
+  };
+
+  const fetchData = async (userId = "all", modelId = "all") => {
+    setIsLoading(true);
+    try {
+      // Fetch all data in parallel
+      const [platform, additional, advanced, analysis, conversations, userLeave, users] = await Promise.all([
+        fetchPlatformMetrics(),
+        fetchAdditionalMetrics(),
+        fetchAdvancedMetrics(),
+        fetchChatAnalysis(),
+        fetchConversationDetails(userId !== "all" ? userId : undefined, undefined, modelId !== "all" ? modelId : undefined),
+        fetchUserLeaveMetrics(userId !== "all" ? userId : undefined),
+        fetchUsers()
+      ]);
+      
+      setPlatformMetrics(platform);
+      setAdditionalMetrics(additional);
+      setAdvancedMetrics(advanced);
+      setChatAnalysis(analysis);
+      setConversationDetails(conversations);
+      setUserLeaveMetrics(userLeave);
+      setUserOptions(users);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
-  if (isLoading || !platformMetrics || !additionalMetrics || !advancedMetrics || !chatAnalysis || !conversationDetails) {
+  if (isLoading || !platformMetrics || !additionalMetrics || !advancedMetrics || !chatAnalysis || !conversationDetails || !userLeaveMetrics) {
     return <LoadingState message="Loading dashboard data..." />;
   }
 
@@ -90,6 +112,9 @@ const Index = () => {
       <DashboardHeader 
         title="Analytics Dashboard" 
         subtitle="Monitor and analyze your AI platform metrics"
+        onUserSelect={handleUserSelect}
+        onModelSelect={handleModelSelect}
+        userOptions={userOptions}
       />
       
       {/* Overview Cards */}
@@ -131,6 +156,14 @@ const Index = () => {
           isLoading={isLoading}
         />
       </div>
+      
+      {/* User Leave Metrics */}
+      <UserLeaveMetrics 
+        totalLeaves={userLeaveMetrics.total_leaves}
+        averageLeaveDuration={userLeaveMetrics.average_leave_duration}
+        leavePercentage={userLeaveMetrics.leave_percentage}
+        isLoading={isLoading}
+      />
       
       {/* Second Row - More Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
