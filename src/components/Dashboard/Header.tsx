@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Search, Calendar, Bell, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CalendarIcon } from '@radix-ui/react-icons';
 import {
   Popover,
   PopoverContent,
@@ -47,7 +46,7 @@ export function DashboardHeader({ title, subtitle }: DashboardHeaderProps) {
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-[200px] justify-start text-left font-normal border-muted">
-                <CalendarIcon className="mr-2 h-4 w-4" />
+                <Calendar className="mr-2 h-4 w-4" />
                 {date ? format(date, "PPP") : <span>Pick a date</span>}
               </Button>
             </PopoverTrigger>

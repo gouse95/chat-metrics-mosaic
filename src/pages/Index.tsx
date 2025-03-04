@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { DashboardHeader } from '@/components/Dashboard/Header';
 import { MetricsCard } from '@/components/Dashboard/MetricsCard';
-import { ChartSection } from '@/components/Dashboard/ChartSection';
+import { ChartSection } from '@/components/Dashboard/ChartSectionPatched';
 import { GuardrailsSection } from '@/components/Dashboard/GuardrailsSection';
 import { ConversationAnalysis } from '@/components/Dashboard/ConversationAnalysis';
 import { TokenUsage } from '@/components/Dashboard/TokenUsage';
